@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-kit/kit/log/level"
 	"github.com/julienschmidt/httprouter"
+	"github.com/kfdm/promql-guard/handler"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
@@ -44,6 +45,9 @@ func run() int {
 
 	r := httprouter.New()
 	r.Handler("GET", path.Join("/metrics"), promhttp.Handler())
+	r.Handler("GET", path.Join("/api/v1/query"), handler.Query())
+	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query())
+	r.Handler("GET", path.Join("/api/v1/series"), handler.Query())
 
 	level.Info(logger).Log("listen_address", *listenAddress)
 	l, err := net.Listen("tcp", *listenAddress)
