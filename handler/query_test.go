@@ -19,6 +19,7 @@ func TestQuery(t *testing.T) {
 	q := req.URL.Query()
 	q.Add("query", "foo")
 	req.URL.RawQuery = q.Encode()
+	t.Logf("%s", req.URL.String())
 
 	// Test Request
 	rr := httptest.NewRecorder()
@@ -42,6 +43,7 @@ func TestSeries(t *testing.T) {
 	q := req.URL.Query()
 	q.Add("query", "foo")
 	req.URL.RawQuery = q.Encode()
+	t.Logf("%s", req.URL.String())
 
 	// Test Request
 	rr := httptest.NewRecorder()
