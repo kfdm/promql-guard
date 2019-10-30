@@ -1,2 +1,4 @@
 vendor
-promql-guard*
+
+# ignore generated binaries
+/promql-guard

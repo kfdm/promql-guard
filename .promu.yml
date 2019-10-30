@@ -5,6 +5,9 @@ go:
 repository:
     path: github.com/kfdm/promql-guard
 build:
+    binaries:
+        - name: promql-guard
+          path: ./cmd/promql-guard
     flags: -mod=vendor -a -tags netgo
     ldflags: |
         -X github.com/prometheus/common/version.Version={{.Version}}
