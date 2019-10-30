@@ -9,13 +9,20 @@ import (
 // https://blog.questionable.services/article/testing-http-handlers-go/
 
 func TestQuery(t *testing.T) {
-	targetHandler := Query()
-
+	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Add Test Query
+	q := req.URL.Query()
+	q.Add("query", "foo")
+	req.URL.RawQuery = q.Encode()
+
+	// Test Request
 	rr := httptest.NewRecorder()
+	targetHandler := Query()
 	targetHandler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -25,12 +32,20 @@ func TestQuery(t *testing.T) {
 }
 
 func TestSeries(t *testing.T) {
-	targetHandler := Series()
+	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/series", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Add Test Query
+	q := req.URL.Query()
+	q.Add("query", "foo")
+	req.URL.RawQuery = q.Encode()
+
+	// Test Request
 	rr := httptest.NewRecorder()
+	targetHandler := Series()
 	targetHandler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {

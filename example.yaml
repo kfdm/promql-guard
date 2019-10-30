@@ -1,0 +1,6 @@
+hostname.example.com:
+  promqlguard:
+    upstream: https://prometheus.example.com
+    labels:
+      service: foo
+      project: bar
