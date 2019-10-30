@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/prometheus/promql"
 )
 
 var (
@@ -19,19 +20,31 @@ var (
 	)
 )
 
+// Query Wraped Prometheus Query
 func Query() http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
-		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+
+			expr, err := promql.ParseExpr(req.FormValue("query"))
+			if err != nil {
+				return
+			}
+
+			q := req.URL.Query()
+			q.Set("query", expr.String())
+			req.URL.RawQuery = q.Encode()
+
 			io.WriteString(w, "OK")
 		}),
 	)
 }
 
+// Series Wraped Prometheus Query
 func Series() http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
-		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			io.WriteString(w, "OK")
 		}),
 	)
