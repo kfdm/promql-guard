@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 
 	"github.com/kfdm/promql-guard/injectproxy"
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,7 +26,7 @@ var (
 )
 
 // Query Wraped Prometheus Query
-func Query() http.Handler {
+func Query(logger log.Logger) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -33,27 +35,24 @@ func Query() http.Handler {
 			if err != nil {
 				return
 			}
-			fmt.Println(expr.String())
 
+			level.Debug(logger).Log("msg", "Incoming query", "query", expr.String())
 			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
 				Name:  "key",
 				Type:  labels.MatchEqual,
 				Value: "value",
 			}})
-
-			fmt.Println(expr.String())
+			level.Debug(logger).Log("msg", "Outgoing query", "query", expr.String())
 
 			q := req.URL.Query()
 			q.Set("query", expr.String())
 			req.URL.RawQuery = q.Encode()
-
-			io.WriteString(w, "OK")
 		}),
 	)
 }
 
 // Series Wraped Prometheus Query
-func Series() http.Handler {
+func Series(log log.Logger) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

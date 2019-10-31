@@ -45,9 +45,9 @@ func run() int {
 
 	r := httprouter.New()
 	r.Handler("GET", path.Join("/metrics"), promhttp.Handler())
-	r.Handler("GET", path.Join("/api/v1/query"), handler.Query())
-	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query())
-	r.Handler("GET", path.Join("/api/v1/series"), handler.Query())
+	r.Handler("GET", path.Join("/api/v1/query"), handler.Query(logger))
+	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query(logger))
+	r.Handler("GET", path.Join("/api/v1/series"), handler.Series(logger))
 
 	level.Info(logger).Log("listen_address", *listenAddress)
 	l, err := net.Listen("tcp", *listenAddress)

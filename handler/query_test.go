@@ -3,12 +3,18 @@ package handler
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
 
 func TestQuery(t *testing.T) {
+	var logger = log.NewJSONLogger(os.Stderr)
+
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
 	if err != nil {
@@ -22,12 +28,12 @@ func TestQuery(t *testing.T) {
 	q.Add("end", "54321")
 	q.Add("step", "120")
 	req.URL.RawQuery = q.Encode()
-	t.Logf("%s", req.URL.String())
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Query()
+	targetHandler := Query(logger)
 	targetHandler.ServeHTTP(rr, req)
+	level.Debug(logger).Log("query", req.URL.String())
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
@@ -36,6 +42,8 @@ func TestQuery(t *testing.T) {
 }
 
 func TestSeries(t *testing.T) {
+	var logger = log.NewJSONLogger(os.Stderr)
+
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/series", nil)
 	if err != nil {
@@ -46,12 +54,12 @@ func TestSeries(t *testing.T) {
 	q := req.URL.Query()
 	q.Add("match[]", "node_exporter_build_info")
 	req.URL.RawQuery = q.Encode()
-	t.Logf("%s", req.URL.String())
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Series()
+	targetHandler := Series(logger)
 	targetHandler.ServeHTTP(rr, req)
+	level.Debug(logger).Log("query", req.URL.String())
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
