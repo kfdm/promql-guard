@@ -3,10 +3,34 @@ package config
 import (
 	"io/ioutil"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
+
+// Load parses the YAML input s into a Config.
+func Load(s string) (*Config, error) {
+	cfg := &Config{}
+
+	err := yaml.UnmarshalStrict([]byte(s), cfg)
+	if err != nil {
+		return nil, err
+	}
+	cfg.original = s
+	return cfg, nil
+}
+
+// LoadFile parses the given YAML file into a Config.
+func LoadFile(filename string) (*Config, error) {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := Load(string(content))
+	if err != nil {
+		return nil, errors.Wrapf(err, "parsing YAML file %s", filename)
+	}
+	return cfg, nil
+}
 
 // Prometheus guard configuration
 type Prometheus struct {
@@ -14,25 +38,24 @@ type Prometheus struct {
 	Labels   map[string]string `yaml:"labels"`
 }
 
-// Config Basic config struct
-type Config []struct {
+// VirtualHost is a basic configuration unit
+type VirtualHost struct {
 	Hostname   string     `yaml:"hostname"`
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 }
 
-// New Load new configuration file
-func New(path string, logger log.Logger) Config {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		level.Error(logger).Log("msg", "Error loading file")
-		panic(err)
-	}
+// Config represents the base configuration file
+type Config struct {
+	VirtualHosts []VirtualHost `yaml:"hosts"`
+	original     string
+}
 
-	config := Config{}
-	err = yaml.Unmarshal([]byte(data), &config)
-	if err != nil {
-		level.Error(logger).Log("msg", "Error loading file", "err", err)
-		panic(err)
+// Find particular VirtualHost configuration
+func (c *Config) Find(name string) (*VirtualHost, error) {
+	for _, element := range c.VirtualHosts {
+		if element.Hostname == name {
+			return &element, nil
+		}
 	}
-	return config
+	return nil, errors.New("Unable to find virtual host")
 }

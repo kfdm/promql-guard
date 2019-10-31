@@ -1,6 +1,7 @@
-- hostname: proxy.example.com
-  prometheus:
-    upstream: https://prometheus.example.com
-    labels:
-      service: foo
-      project: bar
+hosts:
+  - hostname: proxy.example.com
+    prometheus:
+      upstream: https://prometheus.example.com
+      labels:
+        service: foo
+        project: bar

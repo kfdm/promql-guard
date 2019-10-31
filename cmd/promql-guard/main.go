@@ -40,19 +40,24 @@ func run() int {
 	kingpin.Parse()
 
 	logger := promlog.New(&promlogConfig)
-	config := config.New(*configFile, logger)
-
-	level.Info(logger).Log("msg", "Config", "config", *configFile)
 	level.Info(logger).Log("build_context", version.BuildContext())
 
+	// Load Configuration
+	level.Info(logger).Log("msg", "Config", "config", *configFile)
+	config, err := config.LoadFile(*configFile)
+	if err != nil {
+		level.Error(logger).Log("err", err)
+		os.Exit(1)
+	}
+
+	// Build Routing Tree
 	r := httprouter.New()
 	r.Handler("GET", path.Join("/metrics"), promhttp.Handler())
-
-	// Wrapped Methods
 	r.Handler("GET", path.Join("/api/v1/query"), handler.Query(logger, config))
 	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query(logger, config))
 	r.Handler("GET", path.Join("/api/v1/series"), handler.Series(logger, config))
 
+	// Launch server
 	level.Info(logger).Log("listen_address", *listenAddress)
 	l, err := net.Listen("tcp", *listenAddress)
 	if err != nil {
