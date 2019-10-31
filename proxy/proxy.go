@@ -16,5 +16,5 @@ type Proxy struct {
 
 // ProxyRequest to upstream Prometheus server
 func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) {
-	level.Debug(p.Logger).Log("proxy", req.URL.String(), "prometheus", p.Config.Prometheus.Upstream)
+	level.Warn(p.Logger).Log("proxy", req.URL.String(), "prometheus", p.Config.Prometheus.Upstream)
 }

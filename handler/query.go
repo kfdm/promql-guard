@@ -34,17 +34,24 @@ func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config
 	virtualhost, err := cfg.Find(req.Host)
 	if err != nil {
 		level.Error(logger).Log("msg", "Unable to find virtualhost", "host", req.Host)
+		http.Error(w, "No configuration for this host", 501)
 		return
 	}
 
 	expr, err := promql.ParseExpr(req.FormValue(query))
 	if err != nil {
+		http.Error(w, "Error parsing PromQL", 400)
 		return
 	}
 
 	// Add our required labels
 	level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
 	err = injectproxy.SetRecursive(expr, virtualhost.Prometheus.Matchers)
+	if err != nil {
+		http.Error(w, "Error enforcing PromQL", 400)
+		level.Error(logger).Log("msg", "Unable to find virtualhost", "host", req.Host)
+		return
+	}
 	level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
 
 	// Return updated query

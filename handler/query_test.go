@@ -39,6 +39,7 @@ func TestMissingHost(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
+	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("../example.yaml")
 	if err != nil {
@@ -75,6 +76,7 @@ func TestQuery(t *testing.T) {
 
 func TestSeries(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
+	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("../example.yaml")
 	if err != nil {
