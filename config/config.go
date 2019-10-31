@@ -8,9 +8,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Prometheus guard configuration
+type Prometheus struct {
+	Upstream string            `yaml:"upstream"`
+	Labels   map[string]string `yaml:"labels"`
+}
+
 // Config Basic config struct
 type Config []struct {
-	Hostname string `yaml:"hostname"`
+	Hostname   string     `yaml:"hostname"`
+	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 }
 
 // New Load new configuration file

@@ -1,5 +1,5 @@
-- hostname: hostname.example.com
-  promqlguard:
+- hostname: proxy.example.com
+  prometheus:
     upstream: https://prometheus.example.com
     labels:
       service: foo
