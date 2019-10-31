@@ -15,7 +15,10 @@ import (
 
 func TestMissingHost(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	var config = config.New("../example.yaml", logger)
+	var config, err = config.LoadFile("../example.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
@@ -36,7 +39,11 @@ func TestMissingHost(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	var config = config.New("../example.yaml", logger)
+
+	var config, err = config.LoadFile("../example.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
@@ -63,11 +70,16 @@ func TestQuery(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+
 }
 
 func TestSeries(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	var config = config.New("../example.yaml", logger)
+
+	var config, err = config.LoadFile("../example.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/series", nil)
