@@ -2,3 +2,6 @@ vendor
 
 # ignore generated binaries
 /promql-guard
+/.build
+/.release
+/.tarballs

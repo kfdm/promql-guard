@@ -28,3 +28,8 @@ build: promu vendor
 .PHONY: run
 run:
 	./promql-guard --log.level=debug --log.format=json --config.file=example.yaml
+
+.PHONY: ship
+ship:
+	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64
+	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64 tarballs

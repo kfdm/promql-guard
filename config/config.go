@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"net/url"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
@@ -10,6 +11,9 @@ import (
 )
 
 type matchers []*labels.Matcher
+type upstream struct {
+	*url.URL
+}
 
 // Load parses the YAML input s into a Config.
 func Load(s string) (*Config, error) {
@@ -38,7 +42,7 @@ func LoadFile(filename string) (*Config, error) {
 
 // Prometheus guard configuration
 type Prometheus struct {
-	Upstream string            `yaml:"upstream"`
+	Upstream upstream          `yaml:"upstream"`
 	Labels   map[string]string `yaml:"labels"`
 	Matchers matchers          `yaml:"matcher,omitempty"`
 }
@@ -84,4 +88,18 @@ func (m *matchers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	default:
 		return errors.New("Invalid matcher declaration")
 	}
+}
+
+func (u *upstream) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+	parsed, err := url.Parse(s)
+	if err != nil {
+		return err
+	}
+	u.URL = parsed
+	return nil
 }
