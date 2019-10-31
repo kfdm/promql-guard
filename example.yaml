@@ -1,7 +1,8 @@
 hosts:
-  - hostname: proxy.example.com
+  - hostname: localhost:9093
     prometheus:
       upstream: https://prometheus.example.com
       labels:
         service: foo
         project: bar
+  

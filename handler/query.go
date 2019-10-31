@@ -5,6 +5,7 @@ import (
 
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/injectproxy"
+	"github.com/kfdm/promql-guard/proxy"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -24,10 +25,6 @@ var (
 		[]string{"handler", "code", "method"},
 	)
 )
-
-func proxy(w http.ResponseWriter, req *http.Request, vhost *config.VirtualHost, logger log.Logger) {
-	level.Debug(logger).Log("proxy", req.URL.String(), "prometheus", vhost.Prometheus.Upstream)
-}
 
 func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config.Config, logger log.Logger) {
 	if req.Host == "" {
@@ -60,7 +57,11 @@ func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config
 	q.Set(query, expr.String())
 	req.URL.RawQuery = q.Encode()
 
-	proxy(w, req, virtualhost, logger)
+	var p = proxy.Proxy{
+		Logger: logger,
+		Config: *virtualhost,
+	}
+	p.ProxyRequest(w, req)
 }
 
 // Query Wraped Prometheus Query

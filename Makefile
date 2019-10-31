@@ -24,3 +24,7 @@ clean:
 build: promu vendor
 	@echo ">> building binaries"
 	GO111MODULE=$(GO111MODULE) $(PROMU) build --prefix $(PREFIX)
+
+.PHONY: run
+run:
+	./promql-guard --log.level=debug --log.format=json --config.file=example.yaml
