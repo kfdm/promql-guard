@@ -64,14 +64,13 @@ func (c *Config) Find(name string) (*VirtualHost, error) {
 
 // Matchers from Prometheus Config
 func (vh VirtualHost) Matchers() ([]*labels.Matcher, error) {
-	matchers := make([]*labels.Matcher, 0, len(vh.Prometheus.Labels))
-	for key, value := range vh.Prometheus.Labels {
-		matchers = append(matchers, &labels.Matcher{
-			Name:  key,
+	res := make([]*labels.Matcher, 0, len(vh.Prometheus.Labels))
+	for name, value := range vh.Prometheus.Labels {
+		res = append(res, &labels.Matcher{
+			Name:  name,
 			Value: value,
 			Type:  labels.MatchEqual,
 		})
 	}
-
-	return matchers, nil
+	return res, nil
 }

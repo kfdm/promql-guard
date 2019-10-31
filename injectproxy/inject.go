@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/prometheus/promql"
 )
 
+// SetRecursive adds our required matchers
 func SetRecursive(node promql.Node, matchersToEnforce []*labels.Matcher) (err error) {
 	switch n := node.(type) {
 	case *promql.EvalStmt:
