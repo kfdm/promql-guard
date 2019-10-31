@@ -12,7 +12,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -45,11 +44,8 @@ func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config
 
 	// Add our required labels
 	level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
-	err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
-		Name:  "key",
-		Type:  labels.MatchEqual,
-		Value: "value",
-	}})
+	matchers, err := virtualhost.Matchers()
+	err = injectproxy.SetRecursive(expr, matchers)
 	level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
 
 	// Return updated query

@@ -50,7 +50,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Host = "proxy.example.com"
+	req.Host = config.VirtualHosts[0].Hostname
 
 	// Add Test Query
 	q := req.URL.Query()
@@ -86,7 +86,7 @@ func TestSeries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Host = "proxy.example.com"
+	req.Host = config.VirtualHosts[0].Hostname
 
 	// Add Test Query
 	q := req.URL.Query()

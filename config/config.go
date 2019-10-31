@@ -5,6 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/prometheus/prometheus/pkg/labels"
 )
 
 // Load parses the YAML input s into a Config.
@@ -58,4 +60,18 @@ func (c *Config) Find(name string) (*VirtualHost, error) {
 		}
 	}
 	return nil, errors.New("Unable to find virtual host")
+}
+
+// Matchers from Prometheus Config
+func (vh VirtualHost) Matchers() ([]*labels.Matcher, error) {
+	matchers := make([]*labels.Matcher, 0, len(vh.Prometheus.Labels))
+	for key, value := range vh.Prometheus.Labels {
+		matchers = append(matchers, &labels.Matcher{
+			Name:  key,
+			Value: value,
+			Type:  labels.MatchEqual,
+		})
+	}
+
+	return matchers, nil
 }
