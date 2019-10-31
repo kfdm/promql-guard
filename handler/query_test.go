@@ -13,6 +13,27 @@ import (
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
 
+func TestMissingHost(t *testing.T) {
+	var logger = log.NewJSONLogger(os.Stderr)
+	var config = config.New("../example.yaml", logger)
+
+	// Build Reqeust
+	req, err := http.NewRequest("GET", "/api/v1/query", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Test Request
+	rr := httptest.NewRecorder()
+	targetHandler := Query(logger, config)
+	targetHandler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
 func TestQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 	var config = config.New("../example.yaml", logger)
@@ -22,6 +43,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	req.Host = "proxy.example.com"
 
 	// Add Test Query
 	q := req.URL.Query()
@@ -52,6 +74,7 @@ func TestSeries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	req.Host = "proxy.example.com"
 
 	// Add Test Query
 	q := req.URL.Query()

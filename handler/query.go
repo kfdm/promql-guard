@@ -30,6 +30,13 @@ func Query(logger log.Logger, config config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			if req.Host == "" {
+				http.Error(w, "Missing host header", 400)
+				return
+			}
+
+			level.Debug(logger).Log("test", config)
+
 			// Pull out Query
 			expr, err := promql.ParseExpr(req.FormValue("query"))
 			if err != nil {
@@ -37,13 +44,13 @@ func Query(logger log.Logger, config config.Config) http.Handler {
 			}
 
 			// Add our required labels
-			level.Debug(logger).Log("msg", "Incoming query", "query", expr.String())
+			level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
 			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
 				Name:  "key",
 				Type:  labels.MatchEqual,
 				Value: "value",
 			}})
-			level.Debug(logger).Log("msg", "Outgoing query", "query", expr.String())
+			level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
 
 			// Return updated query
 			q := req.URL.Query()
@@ -58,6 +65,10 @@ func Series(logger log.Logger, config config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			if req.Host == "" {
+				http.Error(w, "Missing host header", 400)
+			}
+
 			// Pull out Query
 			expr, err := promql.ParseExpr(req.FormValue("match[]"))
 			if err != nil {
@@ -65,13 +76,13 @@ func Series(logger log.Logger, config config.Config) http.Handler {
 			}
 
 			// Add our required labels
-			level.Debug(logger).Log("msg", "Incoming query", "query", expr.String())
+			level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
 			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
 				Name:  "key",
 				Type:  labels.MatchEqual,
 				Value: "value",
 			}})
-			level.Debug(logger).Log("msg", "Outgoing query", "query", expr.String())
+			level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
 
 			// Return updated query
 			q := req.URL.Query()
