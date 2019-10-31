@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/kfdm/promql-guard/injectproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -30,6 +33,15 @@ func Query() http.Handler {
 			if err != nil {
 				return
 			}
+			fmt.Println(expr.String())
+
+			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
+				Name:  "key",
+				Type:  labels.MatchEqual,
+				Value: "value",
+			}})
+
+			fmt.Println(expr.String())
 
 			q := req.URL.Query()
 			q.Set("query", expr.String())

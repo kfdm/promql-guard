@@ -17,7 +17,10 @@ func TestQuery(t *testing.T) {
 
 	// Add Test Query
 	q := req.URL.Query()
-	q.Add("query", "foo")
+	q.Add("query", "node_filesystem_free_bytes / node_filesystem_size_bytes")
+	q.Add("start", "12345")
+	q.Add("end", "54321")
+	q.Add("step", "120")
 	req.URL.RawQuery = q.Encode()
 	t.Logf("%s", req.URL.String())
 
@@ -41,7 +44,7 @@ func TestSeries(t *testing.T) {
 
 	// Add Test Query
 	q := req.URL.Query()
-	q.Add("query", "foo")
+	q.Add("match[]", "node_exporter_build_info")
 	req.URL.RawQuery = q.Encode()
 	t.Logf("%s", req.URL.String())
 
