@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
@@ -30,12 +29,13 @@ func Query(logger log.Logger) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-
+			// Pull out Query
 			expr, err := promql.ParseExpr(req.FormValue("query"))
 			if err != nil {
 				return
 			}
 
+			// Add our required labels
 			level.Debug(logger).Log("msg", "Incoming query", "query", expr.String())
 			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
 				Name:  "key",
@@ -44,6 +44,7 @@ func Query(logger log.Logger) http.Handler {
 			}})
 			level.Debug(logger).Log("msg", "Outgoing query", "query", expr.String())
 
+			// Return updated query
 			q := req.URL.Query()
 			q.Set("query", expr.String())
 			req.URL.RawQuery = q.Encode()
@@ -52,11 +53,29 @@ func Query(logger log.Logger) http.Handler {
 }
 
 // Series Wraped Prometheus Query
-func Series(log log.Logger) http.Handler {
+func Series(logger log.Logger) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			io.WriteString(w, "OK")
+			// Pull out Query
+			expr, err := promql.ParseExpr(req.FormValue("match[]"))
+			if err != nil {
+				return
+			}
+
+			// Add our required labels
+			level.Debug(logger).Log("msg", "Incoming query", "query", expr.String())
+			err = injectproxy.SetRecursive(expr, []*labels.Matcher{{
+				Name:  "key",
+				Type:  labels.MatchEqual,
+				Value: "value",
+			}})
+			level.Debug(logger).Log("msg", "Outgoing query", "query", expr.String())
+
+			// Return updated query
+			q := req.URL.Query()
+			q.Set("match[]", expr.String())
+			req.URL.RawQuery = q.Encode()
 		}),
 	)
 }
