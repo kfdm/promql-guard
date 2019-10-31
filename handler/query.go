@@ -3,10 +3,11 @@ package handler
 import (
 	"net/http"
 
+	"github.com/kfdm/promql-guard/config"
+	"github.com/kfdm/promql-guard/injectproxy"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-
-	"github.com/kfdm/promql-guard/injectproxy"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,7 +26,7 @@ var (
 )
 
 // Query Wraped Prometheus Query
-func Query(logger log.Logger) http.Handler {
+func Query(logger log.Logger, config config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -53,7 +54,7 @@ func Query(logger log.Logger) http.Handler {
 }
 
 // Series Wraped Prometheus Query
-func Series(logger log.Logger) http.Handler {
+func Series(logger log.Logger, config config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
 		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

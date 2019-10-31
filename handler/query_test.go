@@ -8,12 +8,14 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/kfdm/promql-guard/config"
 )
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
 
 func TestQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
+	var config = config.New("../example.yaml", logger)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
@@ -31,7 +33,7 @@ func TestQuery(t *testing.T) {
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Query(logger)
+	targetHandler := Query(logger, config)
 	targetHandler.ServeHTTP(rr, req)
 	level.Debug(logger).Log("query", req.URL.String())
 
@@ -43,6 +45,7 @@ func TestQuery(t *testing.T) {
 
 func TestSeries(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
+	var config = config.New("../example.yaml", logger)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/series", nil)
@@ -57,7 +60,7 @@ func TestSeries(t *testing.T) {
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Series(logger)
+	targetHandler := Series(logger, config)
 	targetHandler.ServeHTTP(rr, req)
 	level.Debug(logger).Log("query", req.URL.String())
 

@@ -1,4 +1,4 @@
-hostname.example.com:
+- hostname: hostname.example.com
   promqlguard:
     upstream: https://prometheus.example.com
     labels:

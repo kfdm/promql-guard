@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-kit/kit/log/level"
 	"github.com/julienschmidt/httprouter"
+	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/handler"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -39,15 +40,18 @@ func run() int {
 	kingpin.Parse()
 
 	logger := promlog.New(&promlogConfig)
+	config := config.New(*configFile, logger)
 
 	level.Info(logger).Log("msg", "Config", "config", *configFile)
 	level.Info(logger).Log("build_context", version.BuildContext())
 
 	r := httprouter.New()
 	r.Handler("GET", path.Join("/metrics"), promhttp.Handler())
-	r.Handler("GET", path.Join("/api/v1/query"), handler.Query(logger))
-	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query(logger))
-	r.Handler("GET", path.Join("/api/v1/series"), handler.Series(logger))
+
+	// Wrapped Methods
+	r.Handler("GET", path.Join("/api/v1/query"), handler.Query(logger, config))
+	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query(logger, config))
+	r.Handler("GET", path.Join("/api/v1/series"), handler.Series(logger, config))
 
 	level.Info(logger).Log("listen_address", *listenAddress)
 	l, err := net.Listen("tcp", *listenAddress)
