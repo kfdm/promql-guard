@@ -4,10 +4,12 @@ import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
-
 	"github.com/prometheus/prometheus/pkg/labels"
+	"github.com/prometheus/prometheus/promql"
+	"gopkg.in/yaml.v2"
 )
+
+type matchers []*labels.Matcher
 
 // Load parses the YAML input s into a Config.
 func Load(s string) (*Config, error) {
@@ -38,6 +40,7 @@ func LoadFile(filename string) (*Config, error) {
 type Prometheus struct {
 	Upstream string            `yaml:"upstream"`
 	Labels   map[string]string `yaml:"labels"`
+	Matchers matchers          `yaml:"matcher,omitempty"`
 }
 
 // VirtualHost is a basic configuration unit
@@ -62,15 +65,23 @@ func (c *Config) Find(name string) (*VirtualHost, error) {
 	return nil, errors.New("Unable to find virtual host")
 }
 
-// Matchers from Prometheus Config
-func (vh VirtualHost) Matchers() ([]*labels.Matcher, error) {
-	res := make([]*labels.Matcher, 0, len(vh.Prometheus.Labels))
-	for name, value := range vh.Prometheus.Labels {
-		res = append(res, &labels.Matcher{
-			Name:  name,
-			Value: value,
-			Type:  labels.MatchEqual,
-		})
+// UnmarshalYAML a regular string type to Prometheus matcher type
+func (m *matchers) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var buf string
+	err := unmarshal(&buf)
+	if err != nil {
+		return errors.New("Unable to unmarshal string")
 	}
-	return res, nil
+	expr, err := promql.ParseExpr(buf)
+	if err != nil {
+		return errors.New("Unable to parse PromQL")
+	}
+
+	switch n := expr.(type) {
+	case *promql.VectorSelector:
+		*m = n.LabelMatchers
+		return nil
+	default:
+		return errors.New("Invalid matcher declaration")
+	}
 }

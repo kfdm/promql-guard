@@ -63,36 +63,15 @@ func SetRecursive(node promql.Node, matchersToEnforce []*labels.Matcher) (err er
 
 	case *promql.MatrixSelector:
 		// inject labelselector
-		n.LabelMatchers = enforceLabelMatchers(n.LabelMatchers, matchersToEnforce)
+		n.LabelMatchers = append(n.LabelMatchers, matchersToEnforce...)
 
 	case *promql.VectorSelector:
 		// inject labelselector
-		n.LabelMatchers = enforceLabelMatchers(n.LabelMatchers, matchersToEnforce)
+		n.LabelMatchers = append(n.LabelMatchers, matchersToEnforce...)
 
 	default:
 		panic(fmt.Errorf("promql.Walk: unhandled node type %T", node))
 	}
 
 	return err
-}
-
-func enforceLabelMatchers(matchers []*labels.Matcher, matchersToEnforce []*labels.Matcher) []*labels.Matcher {
-	res := []*labels.Matcher{}
-	for _, m := range matchersToEnforce {
-		res = enforceLabelMatcher(matchers, m)
-	}
-
-	return res
-}
-
-func enforceLabelMatcher(matchers []*labels.Matcher, enforcedMatcher *labels.Matcher) []*labels.Matcher {
-	res := []*labels.Matcher{}
-	for _, m := range matchers {
-		if m.Name == enforcedMatcher.Name {
-			continue
-		}
-		res = append(res, m)
-	}
-
-	return append(res, enforcedMatcher)
 }

@@ -2,7 +2,4 @@ hosts:
   - hostname: localhost:9093
     prometheus:
       upstream: https://prometheus.example.com
-      labels:
-        service: foo
-        project: bar
-  
+      matcher: '{service="foo", test=~"bar"}'

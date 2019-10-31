@@ -44,9 +44,7 @@ func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config
 
 	// Add our required labels
 	level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
-	matchers, err := virtualhost.Matchers()
-	level.Debug(logger).Log("msg", "Matchers to add", "matchers", matchers)
-	err = injectproxy.SetRecursive(expr, matchers)
+	err = injectproxy.SetRecursive(expr, virtualhost.Prometheus.Matchers)
 	level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
 
 	// Return updated query
