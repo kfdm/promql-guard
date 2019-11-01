@@ -16,6 +16,8 @@ type Proxy struct {
 	Config config.VirtualHost
 }
 
+// https://stackoverflow.com/a/53007606
+
 type DebugTransport struct{}
 
 func (DebugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
