@@ -1,5 +1,9 @@
 hosts:
-  - hostname: localhost:9093
+  - hostname: tenantA.example.com
     prometheus:
       upstream: https://prometheus.example.com
-      matcher: '{service="foo", test=~"bar"}'
+      matcher: '{service="tenantA"}'
+  - hostname: tenantB.example.com
+    prometheus:
+      upstream: https://prometheus.example.com
+      matcher: '{app=~"appY|appZ"}'
