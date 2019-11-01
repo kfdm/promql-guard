@@ -19,7 +19,7 @@ var (
 	httpCnt = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "promqlguard_http_requests_total",
-			Help: "Total HTTP requests processed by the Pushgateway, excluding scrapes.",
+			Help: "Total HTTP requests processed by promql-guard, excluding scrapes.",
 		},
 		[]string{"handler", "code", "method"},
 	)

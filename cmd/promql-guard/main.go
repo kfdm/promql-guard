@@ -30,12 +30,13 @@ func run() int {
 	var (
 		promlogConfig = promlog.Config{}
 		configFile    = kingpin.Flag("config.file", "PromqlGuard configuration file name.").Default("guard.yml").String()
-		listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for the web interface and API.").Default(":9093").String()
+		// Registered at https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+		listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for the web interface and API.").Default(":9218").String()
 	)
 
 	flag.AddFlags(kingpin.CommandLine, &promlogConfig)
 
-	kingpin.Version(version.Print("alertmanager"))
+	kingpin.Version(version.Print("promql-guard"))
 	kingpin.CommandLine.GetFlag("help").Short('h')
 	kingpin.Parse()
 
