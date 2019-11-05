@@ -1,0 +1,14 @@
+# Example Configuration
+# htpasswd is used for tenant passwords
+htpasswd: guard.htpasswd
+
+# each tenant can then be configured with required matchers
+hosts:
+  - username: tenantA
+    prometheus:
+      upstream: http://localhost:9090
+      matcher: '{service="tenantA"}'
+  - username: tenantB
+    prometheus:
+      upstream: http://localhost:9090
+      matcher: '{app=~"appY|appZ"}'

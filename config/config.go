@@ -42,27 +42,27 @@ func LoadFile(filename string) (*Config, error) {
 
 // Prometheus guard configuration
 type Prometheus struct {
-	Upstream upstream          `yaml:"upstream"`
-	Labels   map[string]string `yaml:"labels"`
-	Matchers matchers          `yaml:"matcher,omitempty"`
+	Upstream upstream `yaml:"upstream"`
+	Matchers matchers `yaml:"matcher,omitempty"`
 }
 
 // VirtualHost is a basic configuration unit
 type VirtualHost struct {
-	Hostname   string     `yaml:"hostname"`
+	Username   string     `yaml:"username"`
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 }
 
 // Config represents the base configuration file
 type Config struct {
 	VirtualHosts []VirtualHost `yaml:"hosts"`
+	Htpasswd     string        `yaml:"htpasswd"`
 	original     string
 }
 
 // Find particular VirtualHost configuration
 func (c *Config) Find(name string) (*VirtualHost, error) {
 	for _, element := range c.VirtualHosts {
-		if element.Hostname == name {
+		if element.Username == name {
 			return &element, nil
 		}
 	}

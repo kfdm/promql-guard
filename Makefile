@@ -27,7 +27,7 @@ build: promu vendor
 
 .PHONY: run
 run:
-	./promql-guard --log.level=debug --log.format=json --config.file=example.yaml
+	./promql-guard --log.level=debug --log.format=json
 
 .PHONY: ship
 ship:

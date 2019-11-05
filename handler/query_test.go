@@ -13,9 +13,15 @@ import (
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
 
-func TestMissingHost(t *testing.T) {
+func init() {
+	// For finding our test configuration files
+	os.Chdir("..")
+}
+
+func TestMissingAuth(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	var config, err = config.LoadFile("../example.yaml")
+
+	var config, err = config.LoadFile("guard.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +37,7 @@ func TestMissingHost(t *testing.T) {
 	targetHandler := Query(logger, config)
 	targetHandler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusBadRequest {
+	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusBadRequest)
 	}
@@ -41,7 +47,7 @@ func TestQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 	logger = level.NewFilter(logger, level.AllowInfo())
 
-	var config, err = config.LoadFile("../example.yaml")
+	var config, err = config.LoadFile("guard.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +57,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Host = config.VirtualHosts[0].Hostname
+	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Add Test Query
 	q := req.URL.Query()
@@ -78,7 +84,7 @@ func TestSeries(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 	logger = level.NewFilter(logger, level.AllowInfo())
 
-	var config, err = config.LoadFile("../example.yaml")
+	var config, err = config.LoadFile("guard.yml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +94,7 @@ func TestSeries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Host = config.VirtualHosts[0].Hostname
+	req.SetBasicAuth("tenantB", "tenantB")
 
 	// Add Test Query
 	q := req.URL.Query()
