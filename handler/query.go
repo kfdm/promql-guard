@@ -50,14 +50,14 @@ func enforce(query string, w http.ResponseWriter, req *http.Request, cfg *config
 	}
 
 	// Add our required labels
-	level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String())
+	level.Debug(logger).Log("msg", "Incoming expression", "expression", expr.String(), "user", virtualhost.Username)
 	err = injectproxy.SetRecursive(expr, virtualhost.Prometheus.Matchers)
 	if err != nil {
 		http.Error(w, "Error enforcing PromQL", 400)
 		level.Error(logger).Log("msg", "Unable to find virtualhost", "host", req.Host)
 		return
 	}
-	level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String())
+	level.Debug(logger).Log("msg", "Outgoing expression", "expression", expr.String(), "user", virtualhost.Username)
 
 	// Return updated query
 	q := req.URL.Query()
