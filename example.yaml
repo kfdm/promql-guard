@@ -1,9 +1,0 @@
-hosts:
-  - hostname: tenantA.example.com
-    prometheus:
-      upstream: https://prometheus.example.com
-      matcher: '{service="tenantA"}'
-  - hostname: tenantB.example.com
-    prometheus:
-      upstream: https://prometheus.example.com
-      matcher: '{app=~"appY|appZ"}'

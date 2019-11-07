@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var testConfig = filepath.Join("..", "..", "example.yaml")
+var testConfig = filepath.Join("..", "..", "guard.yml")
 
 func TestMain(m *testing.M) {
 	flag.Parse()

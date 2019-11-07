@@ -3,6 +3,7 @@ module github.com/kfdm/promql-guard
 go 1.12
 
 require (
+	github.com/abbot/go-http-auth v0.4.0
 	github.com/go-kit/kit v0.9.0
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/pkg/errors v0.8.1
