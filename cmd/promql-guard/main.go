@@ -4,16 +4,16 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path"
 
-	"github.com/go-kit/kit/log/level"
-	"github.com/julienschmidt/httprouter"
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/handler"
+
+	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
 	"github.com/prometheus/common/promlog/flag"
+	"github.com/prometheus/common/route"
 	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -52,11 +52,14 @@ func run() int {
 	}
 
 	// Build Routing Tree
-	r := httprouter.New()
-	r.Handler("GET", path.Join("/metrics"), promhttp.Handler())
-	r.Handler("GET", path.Join("/api/v1/query"), handler.Query(logger, config))
-	r.Handler("GET", path.Join("/api/v1/query_range"), handler.Query(logger, config))
-	r.Handler("GET", path.Join("/api/v1/series"), handler.Series(logger, config))
+	router := route.New()
+	router.Get("/metrics", promhttp.Handler().ServeHTTP)
+	router.Get("/api/v1/query", handler.Query(logger, config).ServeHTTP)
+	router.Post("/api/v1/query", handler.Query(logger, config).ServeHTTP)
+	router.Get("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
+	router.Post("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
+	router.Get("/api/v1/series", handler.Query(logger, config).ServeHTTP)
+	router.Post("/api/v1/series", handler.Query(logger, config).ServeHTTP)
 
 	// Launch server
 	level.Info(logger).Log("listen_address", *listenAddress)
@@ -66,7 +69,7 @@ func run() int {
 		os.Exit(1)
 	}
 
-	err = (&http.Server{Addr: *listenAddress, Handler: r}).Serve(l)
+	err = (&http.Server{Addr: *listenAddress, Handler: router}).Serve(l)
 	level.Error(logger).Log("msg", "HTTP server stopped", "err", err)
 
 	return 0
