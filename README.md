@@ -7,30 +7,29 @@ The original intended use case, is managing multiple Grafana instances for tenan
 ## How it works
 
 ```yaml
-# Example Configuration File
+# Example Configuration
+# htpasswd is used for tenant passwords
+htpasswd: guard.htpasswd
+
+# each tenant can then be configured with required matchers
 hosts:
-  - hostname: tenantA.example.com
+  - username: tenantA
     prometheus:
       upstream: https://prometheus.example.com
       matcher: '{service="tenantA"}'
-  - hostname: tenantB.example.com
+  - username: tenantB
     prometheus:
-      upstream: https://prometheus.example.com
+      upstream: https://thanos.example.com
       matcher: '{app=~"appY|appZ"}'
 ```
 
 PromQL Guard proxies the Prometheus API, re-writing the query to restrict to a certain tenant.
 
-Querying `tenantA.example.com` with the query `foo - bar` would be re-written to `foo{service="tenantA"} - bar{service="tenantA"}` before being proxied to `https://prometheus.example.com`
+Querying as the user `tenantA` with the query `foo - bar` would be re-written to `foo{service="tenantA"} - bar{service="tenantA"}` before being proxied to `https://prometheus.example.com`
 
-Querying `tenantB.example.com` with the query `secret{app="appX}` would be re-written to `secret{app="appX", app=~"appY|appZ"}` before being proxied to `https://prometheus.example.com` which would result in no metrics being returned.
-
+Querying as the user `tenantB` with the query `secret{app="appX}` would be re-written to `secret{app="appX", app=~"appY|appZ"}` before being proxied to `https://thanos.example.com` which would result in no metrics being returned.
 
 ## Faq
-
-### Isn't Host header very easy to override?
-
-PromQL Guard is not designed to protect malicious actors (for that scenario, fully separated environments is best). By using the `Host` header, it provides a simple way to have a single proxy used for multiple tenants. When using a shared Grafana instance, each tenant could be assigned their own organization, with users granted `Editor` role. The Grafana admin can then setup a datasource for each tenant so they can only see the metrics they have permission for.
 
 ### What if the user directly queries the upstream Prometheus?
 
