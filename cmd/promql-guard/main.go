@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/kfdm/promql-guard/api"
 	"github.com/kfdm/promql-guard/config"
-	"github.com/kfdm/promql-guard/handler"
 
 	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
@@ -54,12 +54,12 @@ func run() int {
 	// Build Routing Tree
 	router := route.New()
 	router.Get("/metrics", promhttp.Handler().ServeHTTP)
-	router.Get("/api/v1/query", handler.Query(logger, config).ServeHTTP)
-	router.Post("/api/v1/query", handler.Query(logger, config).ServeHTTP)
-	router.Get("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
-	router.Post("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
-	router.Get("/api/v1/series", handler.Series(logger, config).ServeHTTP)
-	router.Post("/api/v1/series", handler.Series(logger, config).ServeHTTP)
+	router.Get("/api/v1/query", api.Query(logger, config).ServeHTTP)
+	router.Post("/api/v1/query", api.Query(logger, config).ServeHTTP)
+	router.Get("/api/v1/query_range", api.QueryRange(logger, config).ServeHTTP)
+	router.Post("/api/v1/query_range", api.QueryRange(logger, config).ServeHTTP)
+	router.Get("/api/v1/series", api.Series(logger, config).ServeHTTP)
+	router.Post("/api/v1/series", api.Series(logger, config).ServeHTTP)
 
 	// Launch server
 	level.Info(logger).Log("listen_address", *listenAddress)
