@@ -26,9 +26,7 @@ var (
 func Query(logger log.Logger, config *config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
-		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			handler.Enforce("query", w, req, config, logger)
-		}),
+		handler.NewEnforcer(config, logger, "query"),
 	)
 }
 
@@ -36,9 +34,7 @@ func Query(logger log.Logger, config *config.Config) http.Handler {
 func QueryRange(logger log.Logger, config *config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query_range"}),
-		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			handler.Enforce("query", w, req, config, logger)
-		}),
+		handler.NewEnforcer(config, logger, "query"),
 	)
 }
 
@@ -46,8 +42,6 @@ func QueryRange(logger log.Logger, config *config.Config) http.Handler {
 func Series(logger log.Logger, config *config.Config) http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
-		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			handler.Enforce("match[]", w, req, config, logger)
-		}),
+		handler.NewEnforcer(config, logger, "match[]"),
 	)
 }
