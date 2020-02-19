@@ -2,7 +2,7 @@ include Makefile.common
 
 DOCKER_IMAGE_NAME ?= promql-guard
 
-test-flags = -v 
+# test-flags = -v
 
 style:
 	@echo skip common-style
