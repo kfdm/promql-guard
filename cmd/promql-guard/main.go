@@ -58,8 +58,8 @@ func run() int {
 	router.Post("/api/v1/query", handler.Query(logger, config).ServeHTTP)
 	router.Get("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
 	router.Post("/api/v1/query_range", handler.Query(logger, config).ServeHTTP)
-	router.Get("/api/v1/series", handler.Query(logger, config).ServeHTTP)
-	router.Post("/api/v1/series", handler.Query(logger, config).ServeHTTP)
+	router.Get("/api/v1/series", handler.Series(logger, config).ServeHTTP)
+	router.Post("/api/v1/series", handler.Series(logger, config).ServeHTTP)
 
 	// Launch server
 	level.Info(logger).Log("listen_address", *listenAddress)
