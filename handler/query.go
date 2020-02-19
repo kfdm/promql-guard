@@ -6,11 +6,10 @@ import (
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/injectproxy"
 	"github.com/kfdm/promql-guard/proxy"
-	"github.com/pkg/errors"
 
-	auth "github.com/abbot/go-http-auth"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/promql"
 )
 
@@ -27,8 +26,7 @@ func NewEnforcer(cfg *config.Config, logger log.Logger, query string) *EnforcerH
 
 // BasicAuth enforces our autentication and returns the correct config
 func (h *EnforcerHandler) BasicAuth(w http.ResponseWriter, req *http.Request) (*config.VirtualHost, error) {
-	htpasswd := auth.HtpasswdFileProvider(h.config.Htpasswd)
-	authenticator := auth.NewBasicAuthenticator("Basic Realm", htpasswd)
+	authenticator := h.config.NewBasicAuthenticator()
 	user := authenticator.CheckAuth(req)
 
 	if user == "" {
@@ -80,9 +78,5 @@ func (h *EnforcerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	q.Set(h.query, expr.String())
 	req.URL.RawQuery = q.Encode()
 
-	var p = proxy.Proxy{
-		Logger: h.logger,
-		Config: *virtualhost,
-	}
-	p.ProxyRequest(w, req)
+	proxy.NewProxy(virtualhost, h.logger).ProxyRequest(w, req)
 }

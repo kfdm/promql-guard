@@ -12,8 +12,8 @@ import (
 
 // Proxy model
 type Proxy struct {
-	Logger log.Logger
-	Config config.VirtualHost
+	logger log.Logger
+	config *config.VirtualHost
 }
 
 // https://stackoverflow.com/a/53007606
@@ -29,11 +29,16 @@ func (DebugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(r)
 }
 
+func NewProxy(config *config.VirtualHost, logger log.Logger) *Proxy {
+	return &Proxy{logger: logger, config: config}
+}
+
 // ProxyRequest to upstream Prometheus server
 func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) {
-	proxy := httputil.NewSingleHostReverseProxy(p.Config.Prometheus.Upstream.URL)
-	req.Host = p.Config.Prometheus.Upstream.Host
-	level.Info(p.Logger).Log("msg", "proxying request", "upstream", p.Config.Prometheus.Upstream, "query", req.URL.String())
+
+	proxy := httputil.NewSingleHostReverseProxy(p.config.Prometheus.URL())
+	req.Host = p.config.Prometheus.Host()
+	level.Info(p.logger).Log("msg", "proxying request", "upstream", p.config.Prometheus.URL(), "query", req.URL.String())
 
 	// proxy.Transport = DebugTransport{}
 
