@@ -6,9 +6,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/kfdm/promql-guard/config"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/kfdm/promql-guard/config"
+	"github.com/prometheus/prometheus/util/testutil"
 )
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
@@ -22,25 +24,18 @@ func TestMissingAuth(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	targetHandler := Query(logger, config)
 	targetHandler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusUnauthorized {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
+	testutil.Equals(t, rr.Code, http.StatusUnauthorized)
 }
 
 func TestQuery(t *testing.T) {
@@ -48,15 +43,11 @@ func TestQuery(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Add Test Query
@@ -73,11 +64,7 @@ func TestQuery(t *testing.T) {
 	targetHandler.ServeHTTP(rr, req)
 	level.Debug(logger).Log("query", req.URL.String())
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
+	testutil.Equals(t, rr.Code, http.StatusOK)
 }
 
 func TestSeries(t *testing.T) {
@@ -85,15 +72,11 @@ func TestSeries(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/series", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	testutil.Ok(t, err)
 	req.SetBasicAuth("tenantB", "tenantB")
 
 	// Add Test Query
@@ -107,8 +90,5 @@ func TestSeries(t *testing.T) {
 	targetHandler.ServeHTTP(rr, req)
 	level.Debug(logger).Log("query", req.URL.String())
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+	testutil.Equals(t, rr.Code, http.StatusOK)
 }
