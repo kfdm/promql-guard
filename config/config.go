@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/url"
 
+	auth "github.com/abbot/go-http-auth"
 	"github.com/pkg/errors"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
@@ -52,11 +53,23 @@ type VirtualHost struct {
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 }
 
+func (p *Prometheus) Host() string {
+	return p.Upstream.Host
+}
+func (p *Prometheus) URL() *url.URL {
+	return p.Upstream.URL
+}
+
 // Config represents the base configuration file
 type Config struct {
 	VirtualHosts []VirtualHost `yaml:"hosts"`
 	Htpasswd     string        `yaml:"htpasswd"`
 	original     string
+}
+
+func (c *Config) NewBasicAuthenticator() *auth.BasicAuth {
+	htpasswd := auth.HtpasswdFileProvider(c.Htpasswd)
+	return auth.NewBasicAuthenticator("Basic Realm", htpasswd)
 }
 
 // Find particular VirtualHost configuration
