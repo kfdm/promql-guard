@@ -38,7 +38,7 @@ func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(p.config.Prometheus.URL())
 	req.Host = p.config.Prometheus.Host()
-	level.Info(p.logger).Log("msg", "proxying request", "upstream", p.config.Prometheus.URL(), "query", req.URL.String())
+	level.Info(p.logger).Log("msg", "proxying request", "upstream", p.config.Prometheus.URL(), "query", req.URL.String(), "method", req.Method)
 
 	// proxy.Transport = DebugTransport{}
 

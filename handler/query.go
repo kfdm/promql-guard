@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/injectproxy"
@@ -50,6 +52,22 @@ func (h *EnforcerHandler) Error(w http.ResponseWriter, code int, err error, msg 
 	level.Error(h.logger).Log("msg", msg, "err", err.Error())
 }
 
+func (h *EnforcerHandler) replaceQuery(req *http.Request, expr promql.Expr) {
+	switch req.Method {
+	case "GET":
+		q := req.URL.Query()
+		q.Set(h.query, expr.String())
+		req.URL.RawQuery = q.Encode()
+	case "POST":
+		req.ParseForm()
+		req.Form.Set(h.query, expr.String())
+		data := req.Form.Encode()
+
+		req.Body = ioutil.NopCloser(strings.NewReader(data))
+		req.ContentLength = int64(len(data))
+	}
+}
+
 // ServeHTTP implements our required http.Handler interface
 func (h *EnforcerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	virtualhost, err := h.BasicAuth(w, req)
@@ -74,9 +92,7 @@ func (h *EnforcerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	level.Debug(h.logger).Log("msg", "Outgoing expression", "expression", expr.String(), "user", virtualhost.Username)
 
 	// Return updated query
-	q := req.URL.Query()
-	q.Set(h.query, expr.String())
-	req.URL.RawQuery = q.Encode()
+	h.replaceQuery(req, expr)
 
 	proxy.NewProxy(virtualhost, h.logger).ProxyRequest(w, req)
 }
