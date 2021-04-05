@@ -5,6 +5,7 @@ import (
 
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/handler"
+	"github.com/kfdm/promql-guard/proxy"
 
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,26 +23,41 @@ var (
 	)
 )
 
+type API struct {
+	config *config.Config
+	logger log.Logger
+	proxy  proxy.RequestProxy
+}
+
+// NewAPI instance
+func NewAPI(config *config.Config, logger log.Logger) *API {
+	return &API{
+		config: config,
+		logger: logger,
+		proxy:  proxy.NewProxy(logger),
+	}
+}
+
 // Query Wraped Prometheus Query
-func Query(logger log.Logger, config *config.Config) http.Handler {
+func (api *API) Query() http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query"}),
-		handler.NewEnforcer(config, logger, "query"),
+		handler.NewEnforcer(api.config, api.logger, "query", api.proxy),
 	)
 }
 
 // QueryRange Wraped Prometheus Query
-func QueryRange(logger log.Logger, config *config.Config) http.Handler {
+func (api *API) QueryRange() http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "query_range"}),
-		handler.NewEnforcer(config, logger, "query"),
+		handler.NewEnforcer(api.config, api.logger, "query", api.proxy),
 	)
 }
 
 // Series Wraped Prometheus Query
-func Series(logger log.Logger, config *config.Config) http.Handler {
+func (api *API) Series() http.Handler {
 	return promhttp.InstrumentHandlerCounter(
 		httpCnt.MustCurryWith(prometheus.Labels{"handler": "series"}),
-		handler.NewEnforcer(config, logger, "match[]"),
+		handler.NewEnforcer(api.config, api.logger, "match[]", api.proxy),
 	)
 }

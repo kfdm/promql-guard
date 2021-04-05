@@ -5,14 +5,14 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/kfdm/promql-guard/config"
+	"github.com/kfdm/promql-guard/proxy"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/util/testutil"
 )
 
@@ -23,11 +23,24 @@ func init() {
 	os.Chdir("..")
 }
 
+func expectedPromql(t *testing.T, value string, expected string) {
+	expr, err := promql.ParseExpr(value)
+	testutil.Ok(t, err)
+	testutil.Equals(t, expected, expr.String())
+}
+
 func TestMissingAuth(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
 	testutil.Ok(t, err)
+
+	api := API{
+		config: config,
+		logger: logger,
+		// Will never reach proxy
+		proxy: nil,
+	}
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
@@ -35,7 +48,7 @@ func TestMissingAuth(t *testing.T) {
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Query(logger, config)
+	targetHandler := api.Query()
 	targetHandler.ServeHTTP(rr, req)
 
 	testutil.Equals(t, rr.Code, http.StatusUnauthorized)
@@ -43,86 +56,109 @@ func TestMissingAuth(t *testing.T) {
 
 func TestGetQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
 	testutil.Ok(t, err)
 
-	// Build Reqeust
-	req, err := http.NewRequest("GET", "/api/v1/query", nil)
-	testutil.Ok(t, err)
-	req.SetBasicAuth("tenantA", "tenantA")
+	var mockResult = func(w http.ResponseWriter, r *http.Request) {
+		testutil.Equals(t, "GET", r.Method)
+		expectedPromql(t,
+			r.FormValue("query"),
+			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
+		)
+	}
 
-	// Add Test Query
-	q := req.URL.Query()
-	q.Add("query", "node_filesystem_free_bytes / node_filesystem_size_bytes")
+	api := API{
+		config: config,
+		logger: logger,
+		proxy:  proxy.NewMock(logger, mockResult),
+	}
+
+	// Build Reqeust
+	q := url.Values{}
+	q.Add("query", "a / b")
 	q.Add("start", "12345")
 	q.Add("end", "54321")
 	q.Add("step", "120")
-	req.URL.RawQuery = q.Encode()
+
+	req, err := proxy.Get("/api/v1/query", q)
+	testutil.Ok(t, err)
+	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Query(logger, config)
-	targetHandler.ServeHTTP(rr, req)
-	level.Debug(logger).Log("query", req.URL.String())
-
+	api.Query().ServeHTTP(rr, req)
 	testutil.Equals(t, rr.Code, http.StatusOK)
 }
 
 func TestPostQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
-	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
 	testutil.Ok(t, err)
 
-	// Add Test Query
+	var mockResult = func(w http.ResponseWriter, r *http.Request) {
+		testutil.Equals(t, "POST", r.Method)
+		expectedPromql(t,
+			r.FormValue("query"),
+			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
+		)
+	}
+
+	api := API{
+		config: config,
+		logger: logger,
+		proxy:  proxy.NewMock(logger, mockResult),
+	}
+
+	// Build Reqeust
 	q := url.Values{}
-	q.Add("query", "node_filesystem_free_bytes / node_filesystem_size_bytes")
+	q.Add("query", "a / b")
 	q.Add("start", "12345")
 	q.Add("end", "54321")
 	q.Add("step", "120")
-	data := q.Encode()
 
-	// Build Reqeust
-	req, err := http.NewRequest("POST", "/api/v1/query", strings.NewReader(data))
+	req, err := proxy.Post("/api/v1/query", q)
 	testutil.Ok(t, err)
 	req.SetBasicAuth("tenantA", "tenantA")
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(data)))
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Query(logger, config)
-	targetHandler.ServeHTTP(rr, req)
-	level.Debug(logger).Log("query", req.URL.String())
-
+	api.Query().ServeHTTP(rr, req)
 	testutil.Equals(t, rr.Code, http.StatusOK)
 }
 
-func TestSeries(t *testing.T) {
+func TestGetSeries(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
 	testutil.Ok(t, err)
 
-	// Build Reqeust
-	req, err := http.NewRequest("GET", "/api/v1/series", nil)
-	testutil.Ok(t, err)
-	req.SetBasicAuth("tenantB", "tenantB")
+	var mockResult = func(w http.ResponseWriter, r *http.Request) {
+		testutil.Equals(t, "GET", r.Method)
+		expectedPromql(t,
+			r.FormValue("match[]"),
+			"node_exporter_build_info{service=\"tenantA\"}",
+		)
+	}
 
-	// Add Test Query
-	q := req.URL.Query()
+	api := API{
+		config: config,
+		logger: logger,
+		proxy:  proxy.NewMock(logger, mockResult),
+	}
+
+	// Build Reqeust
+	q := url.Values{}
 	q.Add("match[]", "node_exporter_build_info")
-	req.URL.RawQuery = q.Encode()
+
+	req, err := proxy.Get("/api/v1/series", q)
+	testutil.Ok(t, err)
+	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := Series(logger, config)
-	targetHandler.ServeHTTP(rr, req)
-	level.Debug(logger).Log("query", req.URL.String())
-
+	api.Series().ServeHTTP(rr, req)
 	testutil.Equals(t, rr.Code, http.StatusOK)
 }

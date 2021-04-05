@@ -18,12 +18,18 @@ import (
 type EnforcerHandler struct {
 	config *config.Config
 	logger log.Logger
+	proxy  proxy.RequestProxy
 	query  string
 }
 
 // NewEnforcer returns a Enforcer handler
-func NewEnforcer(cfg *config.Config, logger log.Logger, query string) *EnforcerHandler {
-	return &EnforcerHandler{config: cfg, logger: logger, query: query}
+func NewEnforcer(cfg *config.Config, logger log.Logger, query string, proxy proxy.RequestProxy) *EnforcerHandler {
+	return &EnforcerHandler{
+		config: cfg,
+		logger: logger,
+		proxy:  proxy,
+		query:  query,
+	}
 }
 
 // BasicAuth enforces our autentication and returns the correct config
@@ -94,5 +100,5 @@ func (h *EnforcerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Return updated query
 	h.replaceQuery(req, expr)
 
-	proxy.NewProxy(virtualhost, h.logger).ProxyRequest(w, req)
+	h.proxy.ProxyRequest(w, req, virtualhost)
 }
