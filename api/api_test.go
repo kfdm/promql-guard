@@ -41,8 +41,7 @@ func TestMissingAuth(t *testing.T) {
 
 	// Test Request
 	rr := httptest.NewRecorder()
-	targetHandler := api.Query()
-	targetHandler.ServeHTTP(rr, req)
+	api.Query().ServeHTTP(rr, req)
 
 	testutil.Equals(t, rr.Code, http.StatusUnauthorized)
 }
