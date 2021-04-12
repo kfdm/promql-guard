@@ -7,6 +7,7 @@ import (
 
 	"github.com/kfdm/promql-guard/api"
 	"github.com/kfdm/promql-guard/config"
+	"github.com/kfdm/promql-guard/proxy"
 
 	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
@@ -56,7 +57,8 @@ func run() int {
 	router.Get("/metrics", promhttp.Handler().ServeHTTP)
 
 	// Add in our API Endpoints
-	api := api.NewAPI(config, logger)
+	proxy := proxy.NewProxy(logger)
+	api := api.NewAPI(config, logger, proxy)
 	router.Get("/api/v1/query", api.Query().ServeHTTP)
 	router.Post("/api/v1/query", api.Query().ServeHTTP)
 	router.Get("/api/v1/query_range", api.QueryRange().ServeHTTP)
