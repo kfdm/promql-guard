@@ -1,5 +1,15 @@
+# v0.0.4 - 2021-04-12
+
+- Query POST support #8
+
+# v0.0.3 - 2020-04-20
+
+- [INTERNAL] Refactor api into separate modules #7
+- [INTERNAL] Use testutil.Ok for prettier tests #6
+- [BUGFIX] Fix for Series api #5
+
 # v0.0.2
 
-- Change from checking `Host` header, to using BasicAuth
+- [CHANGE] Change from `Host` header to checking BasicAuth #1
 
 # v0.0.1 - Initial Release
