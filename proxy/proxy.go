@@ -10,10 +10,14 @@ import (
 	"github.com/kfdm/promql-guard/config"
 )
 
+// RequestProxy for upstream server
+type RequestProxy interface {
+	ProxyRequest(w http.ResponseWriter, req *http.Request, config *config.VirtualHost)
+}
+
 // Proxy model
 type Proxy struct {
 	logger log.Logger
-	config *config.VirtualHost
 }
 
 // https://stackoverflow.com/a/53007606
@@ -29,16 +33,16 @@ func (DebugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(r)
 }
 
-func NewProxy(config *config.VirtualHost, logger log.Logger) *Proxy {
-	return &Proxy{logger: logger, config: config}
+func NewProxy(logger log.Logger) *Proxy {
+	return &Proxy{logger: logger}
 }
 
 // ProxyRequest to upstream Prometheus server
-func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request) {
+func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request, config *config.VirtualHost) {
 
-	proxy := httputil.NewSingleHostReverseProxy(p.config.Prometheus.URL())
-	req.Host = p.config.Prometheus.Host()
-	level.Info(p.logger).Log("msg", "proxying request", "upstream", p.config.Prometheus.URL(), "query", req.URL.String())
+	proxy := httputil.NewSingleHostReverseProxy(config.Prometheus.URL())
+	req.Host = config.Prometheus.Host()
+	level.Info(p.logger).Log("msg", "proxying request", "upstream", config.Prometheus.URL(), "query", req.URL.String(), "method", req.Method)
 
 	// proxy.Transport = DebugTransport{}
 
