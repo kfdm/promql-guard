@@ -28,12 +28,7 @@ func TestMissingAuth(t *testing.T) {
 	var config, err = config.LoadFile("guard.yml")
 	testutil.Ok(t, err)
 
-	api := API{
-		config: config,
-		logger: logger,
-		// Will never reach proxy
-		proxy: nil,
-	}
+	api := NewAPI(config, logger, nil)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
@@ -60,11 +55,8 @@ func TestGetQuery(t *testing.T) {
 		)
 	}
 
-	api := API{
-		config: config,
-		logger: logger,
-		proxy:  proxy.NewMock(logger, mockResult),
-	}
+	proxy_ := proxy.NewMock(logger, mockResult)
+	api := NewAPI(config, logger, proxy_)
 
 	// Build Reqeust
 	q := url.Values{}
@@ -97,11 +89,8 @@ func TestPostQuery(t *testing.T) {
 		)
 	}
 
-	api := API{
-		config: config,
-		logger: logger,
-		proxy:  proxy.NewMock(logger, mockResult),
-	}
+	proxy_ := proxy.NewMock(logger, mockResult)
+	api := NewAPI(config, logger, proxy_)
 
 	// Build Reqeust
 	q := url.Values{}

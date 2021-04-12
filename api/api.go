@@ -30,7 +30,7 @@ type API struct {
 }
 
 // NewAPI instance
-func NewAPI(config *config.Config, logger log.Logger, proxy *proxy.Proxy) *API {
+func NewAPI(config *config.Config, logger log.Logger, proxy proxy.RequestProxy) *API {
 	return &API{
 		config: config,
 		logger: logger,
