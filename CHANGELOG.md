@@ -1,6 +1,6 @@
 # v0.0.4 - 2021-04-12
 
-- Query POST support #8
+- [IMPROVEMENT] Query POST support #8
 
 # v0.0.3 - 2020-04-20
 
