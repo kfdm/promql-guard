@@ -2,7 +2,7 @@ include Makefile.common
 
 DOCKER_IMAGE_NAME ?= promql-guard
 
-# test-flags = -v
+test-flags = -coverprofile=coverage.out # -v
 
 style:
 	@echo skip common-style
@@ -33,3 +33,7 @@ run:
 ship:
 	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64
 	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64 tarballs
+
+.PHONY: cover
+cover:	test
+	${GO} tool cover -html=coverage.out

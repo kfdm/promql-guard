@@ -5,3 +5,4 @@ vendor
 /.build
 /.release
 /.tarballs
+coverage.out
