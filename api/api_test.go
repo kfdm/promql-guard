@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/prometheus/util/testutil"
 )
 
@@ -21,12 +20,6 @@ import (
 func init() {
 	// For finding our test configuration files
 	os.Chdir("..")
-}
-
-func expectedPromql(t *testing.T, value string, expected string) {
-	expr, err := promql.ParseExpr(value)
-	testutil.Ok(t, err)
-	testutil.Equals(t, expected, expr.String())
 }
 
 func TestMissingAuth(t *testing.T) {
@@ -62,7 +55,7 @@ func TestGetQuery(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "GET", r.Method)
-		expectedPromql(t,
+		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
 		)
@@ -99,7 +92,7 @@ func TestPostQuery(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "POST", r.Method)
-		expectedPromql(t,
+		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
 		)
@@ -137,7 +130,7 @@ func TestGetSeries(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "GET", r.Method)
-		expectedPromql(t,
+		proxy.ExpectedPromql(t,
 			r.FormValue("match[]"),
 			"node_exporter_build_info{service=\"tenantA\"}",
 		)

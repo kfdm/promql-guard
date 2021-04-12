@@ -5,9 +5,12 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"testing"
 
 	"github.com/go-kit/kit/log"
 	"github.com/kfdm/promql-guard/config"
+	"github.com/prometheus/prometheus/promql"
+	"github.com/prometheus/tsdb/testutil"
 )
 
 type MockProxy struct {
@@ -45,4 +48,10 @@ func Post(path string, q url.Values) (*http.Request, error) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(data)))
 	return req, nil
+}
+
+func ExpectedPromql(t *testing.T, value string, expected string) {
+	expr, err := promql.ParseExpr(value)
+	testutil.Ok(t, err)
+	testutil.Equals(t, expected, expr.String())
 }
