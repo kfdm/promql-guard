@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"net/http"
 	"net/url"
 
 	auth "github.com/abbot/go-http-auth"
@@ -43,8 +44,9 @@ func LoadFile(filename string) (*Config, error) {
 
 // Prometheus guard configuration
 type Prometheus struct {
-	Upstream upstream `yaml:"upstream"`
-	Matchers matchers `yaml:"matcher,omitempty"`
+	Upstream upstream          `yaml:"upstream"`
+	Matchers matchers          `yaml:"matcher,omitempty"`
+	Headers  map[string]string `yaml:"headers,omitempty"`
 }
 
 // VirtualHost is a basic configuration unit
@@ -53,11 +55,16 @@ type VirtualHost struct {
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 }
 
-func (p *Prometheus) Host() string {
-	return p.Upstream.Host
-}
 func (p *Prometheus) URL() *url.URL {
 	return p.Upstream.URL
+}
+
+// AddHeaders adds custom headers to request
+func (p *Prometheus) UpdateRequest(req *http.Request) {
+	req.Host = p.Upstream.Host
+	for i, v := range p.Headers {
+		req.Header.Set(i, v)
+	}
 }
 
 // Config represents the base configuration file

@@ -41,7 +41,8 @@ func NewProxy(logger log.Logger) *Proxy {
 func (p *Proxy) ProxyRequest(w http.ResponseWriter, req *http.Request, config *config.VirtualHost) {
 
 	proxy := httputil.NewSingleHostReverseProxy(config.Prometheus.URL())
-	req.Host = config.Prometheus.Host()
+	config.Prometheus.UpdateRequest(req)
+
 	level.Info(p.logger).Log("msg", "proxying request", "upstream", config.Prometheus.URL(), "query", req.URL.String(), "method", req.Method)
 
 	// proxy.Transport = DebugTransport{}
