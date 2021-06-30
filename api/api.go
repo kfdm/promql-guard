@@ -7,7 +7,7 @@ import (
 	"github.com/kfdm/promql-guard/handler"
 	"github.com/kfdm/promql-guard/proxy"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
