@@ -1,0 +1,19 @@
+# This is an example .goreleaser.yml file with some sane defaults.
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: cmd/promql-guard/main.go
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+    goos:
+      - linux
+      - darwin
+    ldflags:
+      - -X github.com/prometheus/common/version.Version={{.Version}}
+      # - -X github.com/prometheus/common/version.Revision={{.Revision}}
+      - -X github.com/prometheus/common/version.Branch={{.Branch}}
+      # - -X github.com/prometheus/common/version.BuildUser={{user}}@{{host}}
+      - -X github.com/prometheus/common/version.BuildDate={{.Date}}

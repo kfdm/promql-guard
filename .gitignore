@@ -6,3 +6,4 @@ vendor
 /.release
 /.tarballs
 coverage.out
+dist/
