@@ -10,8 +10,8 @@ import (
 	"github.com/kfdm/promql-guard/config"
 	"github.com/kfdm/promql-guard/proxy"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/prometheus/util/testutil"
 )
 

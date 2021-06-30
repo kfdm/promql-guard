@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/kfdm/promql-guard/config"
 	"github.com/prometheus/prometheus/promql"
 	"github.com/prometheus/tsdb/testutil"
