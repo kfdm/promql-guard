@@ -13,17 +13,13 @@ check_license:
 lint:
 	@echo skip common-lint
 
-vendor:
-	GO111MODULE=$(GO111MODULE) ${GO} mod vendor
-
 .PHONY: clean
 clean:
 	rm -rf vendor promql-guard
 
 .PHONY: build
-build: promu vendor
-	@echo ">> building binaries"
-	GO111MODULE=$(GO111MODULE) $(PROMU) build --prefix $(PREFIX)
+build:
+	goreleaser build --snapshot --rm-dist
 
 .PHONY: run
 run:
@@ -31,8 +27,7 @@ run:
 
 .PHONY: ship
 ship:
-	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64
-	GO111MODULE=$(GO111MODULE) $(PROMU) crossbuild -p linux/amd64 tarballs
+	goreleaser --snapshot --skip-publish --rm-dist
 
 .PHONY: cover
 cover:	test

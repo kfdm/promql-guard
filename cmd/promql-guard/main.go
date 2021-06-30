@@ -42,6 +42,7 @@ func run() int {
 	kingpin.Parse()
 
 	logger := promlog.New(&promlogConfig)
+	level.Info(logger).Log("info", version.Info())
 	level.Info(logger).Log("build_context", version.BuildContext())
 
 	// Load Configuration
