@@ -49,6 +49,8 @@ func TestGetQuery(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "GET", r.Method)
+		// Header from config gets added
+		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
@@ -81,6 +83,8 @@ func TestPostQuery(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "POST", r.Method)
+		// Header from config gets added
+		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
@@ -113,6 +117,8 @@ func TestPostQueryRange(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "POST", r.Method)
+		// Header from config gets added
+		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"test{service=\"tenantA\"}[5s] offset 1w",
@@ -149,9 +155,11 @@ func TestGetSeries(t *testing.T) {
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
 		testutil.Equals(t, "GET", r.Method)
+		// Tenant B doesn't set a specific header so it just gets passed as is
+		testutil.Equals(t, "Basic dGVuYW50Qjp0ZW5hbnRC", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("match[]"),
-			"node_exporter_build_info{service=\"tenantA\"}",
+			"node_exporter_build_info{app=~\"appY|appZ\"}",
 		)
 	}
 
@@ -168,7 +176,7 @@ func TestGetSeries(t *testing.T) {
 	// https://prometheus.io/docs/prometheus/latest/querying/api/#finding-series-by-label-matchers
 	req, err := proxy.Get("/api/v1/series", q)
 	testutil.Ok(t, err)
-	req.SetBasicAuth("tenantA", "tenantA")
+	req.SetBasicAuth("tenantB", "tenantB")
 
 	// Test Request
 	rr := httptest.NewRecorder()

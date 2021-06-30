@@ -25,7 +25,7 @@ func NewMock(logger log.Logger, mock func(rw http.ResponseWriter, req *http.Requ
 func (p *MockProxy) ProxyRequest(w http.ResponseWriter, req *http.Request, config *config.VirtualHost) {
 	req.Form = nil
 	req.PostForm = nil
-	req.Host = config.Prometheus.Host()
+	config.Prometheus.UpdateRequest(req)
 	p.mock(w, req)
 }
 
@@ -45,8 +45,8 @@ func Post(path string, q url.Values) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(data)))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Length", strconv.Itoa(len(data)))
 	return req, nil
 }
 

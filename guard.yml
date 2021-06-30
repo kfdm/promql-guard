@@ -8,6 +8,8 @@ hosts:
     prometheus:
       upstream: http://localhost:9090
       matcher: '{service="tenantA"}'
+      headers:
+        Authorization: Token Foo
   - username: tenantB
     prometheus:
       upstream: http://localhost:9090
