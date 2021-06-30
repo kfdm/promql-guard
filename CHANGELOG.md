@@ -1,3 +1,10 @@
+# v0.0.5 - 2021-06-30
+
+- [INTERNAL] Move from promu to goreleaser #14
+- [INTERNAL] Move github.com/go-kit/kit/ to github.com/go-kit/log #13
+- [CHANGE] Add missing request metrics #12
+- [ENHANCEMENT] Support custom upstream headers #11
+
 # v0.0.4 - 2021-04-12
 
 - [IMPROVEMENT] Query POST support #8
