@@ -7,8 +7,8 @@ import (
 
 	auth "github.com/abbot/go-http-auth"
 	"github.com/pkg/errors"
-	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/prometheus/prometheus/promql"
+	"github.com/prometheus/prometheus/model/labels"
+	"github.com/prometheus/prometheus/promql/parser"
 	"gopkg.in/yaml.v2"
 )
 
@@ -96,13 +96,13 @@ func (m *matchers) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err != nil {
 		return errors.New("Unable to unmarshal string")
 	}
-	expr, err := promql.ParseExpr(buf)
+	expr, err := parser.ParseExpr(buf)
 	if err != nil {
 		return errors.New("Unable to parse PromQL")
 	}
 
 	switch n := expr.(type) {
-	case *promql.VectorSelector:
+	case *parser.VectorSelector:
 		*m = n.LabelMatchers
 		return nil
 	default:

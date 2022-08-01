@@ -12,7 +12,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/prometheus/prometheus/promql"
+	"github.com/prometheus/prometheus/promql/parser"
 )
 
 type EnforcerHandler struct {
@@ -58,7 +58,7 @@ func (h *EnforcerHandler) Error(w http.ResponseWriter, code int, err error, msg 
 	level.Error(h.logger).Log("msg", msg, "err", err.Error())
 }
 
-func (h *EnforcerHandler) replaceQuery(req *http.Request, expr promql.Expr) {
+func (h *EnforcerHandler) replaceQuery(req *http.Request, expr parser.Expr) {
 	switch req.Method {
 	case "GET":
 		q := req.URL.Query()
@@ -82,7 +82,7 @@ func (h *EnforcerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	expr, err := promql.ParseExpr(req.FormValue(h.query))
+	expr, err := parser.ParseExpr(req.FormValue(h.query))
 	if err != nil {
 		h.Error(w, http.StatusBadRequest, err, "Error parsing PromQL")
 		return

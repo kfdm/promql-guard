@@ -121,7 +121,7 @@ func TestPostQueryRange(t *testing.T) {
 		require.Equal(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
-			"test{service=\"tenantA\"}[5s] offset 1w",
+			"test{service=\"tenantA\"}[1m] offset 1w",
 		)
 	}
 
@@ -130,7 +130,7 @@ func TestPostQueryRange(t *testing.T) {
 
 	// Build Reqeust
 	q := url.Values{}
-	q.Add("query", "test[5s] offset 1w")
+	q.Add("query", "test[1m0s] offset 1w")
 	q.Add("start", "12345")
 	q.Add("end", "54321")
 	q.Add("step", "120")

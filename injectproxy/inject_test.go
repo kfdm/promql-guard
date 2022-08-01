@@ -3,8 +3,8 @@ package injectproxy
 import (
 	"testing"
 
-	"github.com/prometheus/prometheus/pkg/labels"
-	"github.com/prometheus/prometheus/promql"
+	"github.com/prometheus/prometheus/model/labels"
+	"github.com/prometheus/prometheus/promql/parser"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +15,7 @@ func TestInject(t *testing.T) {
 	matcher, _ := labels.NewMatcher(labels.MatchEqual, "service", "tenant")
 	matchers = append(matchers, matcher)
 
-	expr, err := promql.ParseExpr("a - b")
+	expr, err := parser.ParseExpr("a - b")
 	require.NoError(t, err)
 
 	err = InjectMatchers(expr, matchers)

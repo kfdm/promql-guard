@@ -10,7 +10,7 @@ import (
 	"github.com/kfdm/promql-guard/config"
 
 	"github.com/go-kit/log"
-	"github.com/prometheus/prometheus/promql"
+	"github.com/prometheus/prometheus/promql/parser"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +52,7 @@ func Post(path string, q url.Values) (*http.Request, error) {
 }
 
 func ExpectedPromql(t *testing.T, value string, expected string) {
-	expr, err := promql.ParseExpr(value)
+	expr, err := parser.ParseExpr(value)
 	require.NoError(t, err)
 	require.Equal(t, expected, expr.String())
 }
