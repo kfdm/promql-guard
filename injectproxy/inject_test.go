@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/promql"
-	"github.com/prometheus/prometheus/util/testutil"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInject(t *testing.T) {
@@ -16,10 +16,10 @@ func TestInject(t *testing.T) {
 	matchers = append(matchers, matcher)
 
 	expr, err := promql.ParseExpr("a - b")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	err = InjectMatchers(expr, matchers)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
-	testutil.Equals(t, expr.String(), "a{service=\"tenant\"} - b{service=\"tenant\"}")
+	require.Equal(t, expr.String(), "a{service=\"tenant\"} - b{service=\"tenant\"}")
 }

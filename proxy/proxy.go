@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/kfdm/promql-guard/config"
+
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"github.com/kfdm/promql-guard/config"
 )
 
 // RequestProxy for upstream server
