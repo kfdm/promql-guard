@@ -16,9 +16,9 @@ func InjectMatchers(expr parser.Expr, matchers []*labels.Matcher) error {
 
 func (i Injector) Visit(node parser.Node, path []parser.Node) (parser.Visitor, error) {
 	switch n := node.(type) {
-	case *parser.MatrixSelector:
-		// inject labelselector
-		n.LabelMatchers = append(n.LabelMatchers, i.matchers...)
+	// case *parser.MatrixSelector:
+	// 	// inject labelselector
+	// 	n.LabelMatchers = append(n.LabelMatchers, i.matchers...)
 
 	case *parser.VectorSelector:
 		// inject labelselector
