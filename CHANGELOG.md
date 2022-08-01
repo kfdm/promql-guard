@@ -1,3 +1,8 @@
+# v0.1.0 - 2021-08-01
+
+- [IMPROVEMENT] Upgrade Prometheus version #17
+- [INTERNAL] Migrate to use stretchr/testify #16
+
 # v0.0.5 - 2021-06-30
 
 - [INTERNAL] Move from promu to goreleaser #14
