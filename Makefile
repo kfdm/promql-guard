@@ -23,7 +23,7 @@ build:
 
 .PHONY: run
 run:
-	./promql-guard --log.level=debug --log.format=json
+	go run cmd/promql-guard/main.go --log.level=debug --log.format=json
 
 .PHONY: ship
 ship:
