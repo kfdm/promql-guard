@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/prometheus/prometheus/util/testutil"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -14,5 +14,5 @@ func init() {
 
 func TestExampleFile(t *testing.T) {
 	_, err := LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 }

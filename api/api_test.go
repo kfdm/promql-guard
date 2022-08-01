@@ -12,7 +12,7 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"github.com/prometheus/prometheus/util/testutil"
+	"github.com/stretchr/testify/require"
 )
 
 // https://blog.questionable.services/article/testing-http-handlers-go/
@@ -26,31 +26,31 @@ func TestMissingAuth(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	api := NewAPI(config, logger, nil)
 
 	// Build Reqeust
 	req, err := http.NewRequest("GET", "/api/v1/query", nil)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	api.Query().ServeHTTP(rr, req)
 
-	testutil.Equals(t, rr.Code, http.StatusUnauthorized)
+	require.Equal(t, rr.Code, http.StatusUnauthorized)
 }
 
 func TestGetQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
-		testutil.Equals(t, "GET", r.Method)
+		require.Equal(t, "GET", r.Method)
 		// Header from config gets added
-		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
+		require.Equal(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
@@ -66,25 +66,25 @@ func TestGetQuery(t *testing.T) {
 
 	// https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries
 	req, err := proxy.Get("/api/v1/query", q)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	api.Query().ServeHTTP(rr, req)
-	testutil.Equals(t, rr.Code, http.StatusOK)
+	require.Equal(t, rr.Code, http.StatusOK)
 }
 
 func TestPostQuery(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
-		testutil.Equals(t, "POST", r.Method)
+		require.Equal(t, "POST", r.Method)
 		// Header from config gets added
-		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
+		require.Equal(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"a{service=\"tenantA\"} / b{service=\"tenantA\"}",
@@ -100,25 +100,25 @@ func TestPostQuery(t *testing.T) {
 
 	// https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries
 	req, err := proxy.Post("/api/v1/query", q)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	api.Query().ServeHTTP(rr, req)
-	testutil.Equals(t, rr.Code, http.StatusOK)
+	require.Equal(t, rr.Code, http.StatusOK)
 }
 
 func TestPostQueryRange(t *testing.T) {
 	var logger = log.NewJSONLogger(os.Stderr)
 
 	var config, err = config.LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
-		testutil.Equals(t, "POST", r.Method)
+		require.Equal(t, "POST", r.Method)
 		// Header from config gets added
-		testutil.Equals(t, "Token Foo", r.Header.Get("Authorization"))
+		require.Equal(t, "Token Foo", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("query"),
 			"test{service=\"tenantA\"}[5s] offset 1w",
@@ -137,13 +137,13 @@ func TestPostQueryRange(t *testing.T) {
 
 	// https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
 	req, err := proxy.Post("/api/v1/query_range", q)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 	req.SetBasicAuth("tenantA", "tenantA")
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	api.QueryRange().ServeHTTP(rr, req)
-	testutil.Equals(t, rr.Code, http.StatusOK)
+	require.Equal(t, rr.Code, http.StatusOK)
 }
 
 func TestGetSeries(t *testing.T) {
@@ -151,12 +151,12 @@ func TestGetSeries(t *testing.T) {
 	logger = level.NewFilter(logger, level.AllowInfo())
 
 	var config, err = config.LoadFile("guard.yml")
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 
 	var mockResult = func(w http.ResponseWriter, r *http.Request) {
-		testutil.Equals(t, "GET", r.Method)
+		require.Equal(t, "GET", r.Method)
 		// Tenant B doesn't set a specific header so it just gets passed as is
-		testutil.Equals(t, "Basic dGVuYW50Qjp0ZW5hbnRC", r.Header.Get("Authorization"))
+		require.Equal(t, "Basic dGVuYW50Qjp0ZW5hbnRC", r.Header.Get("Authorization"))
 		proxy.ExpectedPromql(t,
 			r.FormValue("match[]"),
 			"node_exporter_build_info{app=~\"appY|appZ\"}",
@@ -175,11 +175,11 @@ func TestGetSeries(t *testing.T) {
 
 	// https://prometheus.io/docs/prometheus/latest/querying/api/#finding-series-by-label-matchers
 	req, err := proxy.Get("/api/v1/series", q)
-	testutil.Ok(t, err)
+	require.NoError(t, err)
 	req.SetBasicAuth("tenantB", "tenantB")
 
 	// Test Request
 	rr := httptest.NewRecorder()
 	api.Series().ServeHTTP(rr, req)
-	testutil.Equals(t, rr.Code, http.StatusOK)
+	require.Equal(t, rr.Code, http.StatusOK)
 }
